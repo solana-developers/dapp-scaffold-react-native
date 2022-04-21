@@ -10,8 +10,12 @@
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
   },
   "dependencies": {
+    "@solana/web3.js": "^1.39.1",
+    "metro-config": "^0.70.1",
     "react": "17.0.2",
-    "react-native": "0.68.1"
+    "react-native": "0.68.1",
+    "react-native-get-random-values": "^1.7.2",
+    "react-native-url-polyfill": "^1.3.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
