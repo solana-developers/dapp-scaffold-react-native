@@ -9,7 +9,7 @@ export const AccountSelect = () => {
 
   return (
     <Section title={`Account: ${selectedAccount?.name || 'None'}`}>
-      {accounts?.map(item => (
+      {accounts.map(item => (
         <Button
           disabled={item === selectedAccount}
           key={item.id}
