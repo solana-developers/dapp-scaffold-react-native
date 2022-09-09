@@ -1,5 +1,5 @@
 import {Keypair, PublicKey} from '@solana/web3.js';
-import React, {ReactNode, useEffect, useState} from 'react';
+import React, {ReactNode, useEffect, useMemo, useState} from 'react';
 
 export function elipsify(str = '', len = 4) {
   if (str.length > 30) {
@@ -20,16 +20,17 @@ export interface Account {
 }
 
 export interface AccountProviderContext {
-  account?: Account | null;
-  accounts?: Account[];
+  accounts: Account[];
   createAccount: () => void;
   selectedAccount?: Account;
   selectAccount: (network: Account) => void;
 }
 
 const AccountsContext = React.createContext<AccountProviderContext>({
+  accounts: [],
   createAccount() {},
-  selectAccount(n: Account) {},
+  selectAccount(_account: Account) {},
+  selectedAccount: undefined,
 });
 
 function AccountProvider(props: {children: ReactNode}) {
@@ -37,14 +38,12 @@ function AccountProvider(props: {children: ReactNode}) {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [selectedAccount, setSelectedAccount] = useState<Account>(accounts[0]);
 
-  const [account, setAccount] = useState<Account | null>();
-
-  const createAccount = () => {
+  function createAccount() {
     const {publicKey, secretKey} = Keypair.generate();
     const name = elipsify(publicKey.toBase58());
 
-    setAccounts([
-      ...accounts,
+    setAccounts(currentAccounts => [
+      ...currentAccounts,
       {
         id: publicKey.toBase58(),
         name,
@@ -52,27 +51,29 @@ function AccountProvider(props: {children: ReactNode}) {
         secretKey: secretKey,
       },
     ]);
-  };
-  const selectAccount = (network: Account) => {
-    console.log(`Select Account: ${network?.name}`);
-    setSelectedAccount(network);
-    // setAccount(() => new Account(clusterApiUrl(network.endpoint)));
-  };
+  }
+
+  function selectAccount(account: Account) {
+    console.log(`Select Account: ${account?.name}`);
+    setSelectedAccount(account);
+  }
 
   useEffect(() => {
-    if (!account && selectedAccount) {
-      selectAccount(selectedAccount);
-      return;
+    if (accounts.length > 0 && !selectedAccount) {
+      selectAccount(accounts[0]);
     }
-  }, [account, selectAccount]);
+  }, [accounts, selectedAccount]);
 
-  const value = {
-    account,
-    accounts,
-    createAccount,
-    selectedAccount,
-    selectAccount,
-  };
+  const value = useMemo(
+    () => ({
+      accounts,
+      createAccount,
+      selectedAccount,
+      selectAccount,
+    }),
+    [accounts, selectedAccount],
+  );
+
   return (
     <AccountsContext.Provider value={value}>
       {children}
